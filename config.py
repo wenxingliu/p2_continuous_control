@@ -1,0 +1,14 @@
+Vmax = 10
+Vmin = -10
+N_ATOMS = 51
+DELTA_Z = (Vmax - Vmin) / (N_ATOMS - 1)
+
+GAMMA = .99
+NUM_AGENTS = 20
+TRAJECTORY_LENGTH = 5
+MEMORY_BUFFER = int(1e6)
+BATCH_SIZE = 64
+LEARN_EVERY = 10
+LR = 5e-4
+EPSILON = 0.3
+TAU = 1e-3
