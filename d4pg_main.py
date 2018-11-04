@@ -1,7 +1,7 @@
 from d4pg_agent import Agent
 from d4pg_model import D4PGNet as Net
 from replay_buffer import AgentMemory
-from d4pg_utils import hard_update, soft_update
+from utils import hard_update, soft_update
 import torch
 import torch.optim as optim
 
@@ -44,7 +44,7 @@ def train(episodes=100):
 
         print('Episode %d, avg score: %.5f' % (e, np.mean(scores_window)))
 
-        if np.mean(scores_window) >= 30:
+        if np.mean(scores_window) > 30:
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(e - 100,
                                                                                          np.mean(scores_window)))
             torch.save(local_net.actor.state_dict(), 'checkpoints/actor_checkpoint_%d.pth' % e)

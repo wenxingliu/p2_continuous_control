@@ -1,6 +1,6 @@
 from unityagents import UnityEnvironment
 import numpy as np
-from d4pg_utils import array_to_tensor, unpack_trajectories, compute_actor_loss, compute_critic_loss
+from utils import array_to_tensor, unpack_trajectories, compute_actor_loss, compute_critic_loss
 import torch
 from config import *
 

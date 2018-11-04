@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from d4pg_utils import array_to_tensor
+from utils import array_to_tensor
 from config import *
 
 device = "cuda" if torch.cuda.is_available() else "cpu"

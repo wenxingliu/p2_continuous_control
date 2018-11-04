@@ -31,42 +31,6 @@ def unpack_trajectories(trajectories):
     return states, actions, rewards, next_states, dones
 
 
-# def distr_projection(next_distr, rewards, dones_mask):
-#     gamma = GAMMA ** TRAJECTORY_LENGTH
-#     proj_distr = np.zeros((BATCH_SIZE, N_ATOMS), dtype=np.float32)
-#     # discounted_reward = (GAMMA**np.arange(TRAJECTORY_LENGTH)[::-1]*rewards).sum(1)
-#
-#     for atom in range(N_ATOMS):
-#         tz_j = np.minimum(Vmax, np.maximum(Vmin, rewards + (Vmin + atom * DELTA_Z) * gamma))
-#         b_j = (tz_j - Vmin) / DELTA_Z
-#         l = np.floor(b_j).astype(np.int64)
-#         u = np.ceil(b_j).astype(np.int64)
-#         eq_mask = u == l
-#         proj_distr[eq_mask, l[eq_mask]] += next_distr[eq_mask, atom]
-#         ne_mask = u != l
-#         proj_distr[ne_mask, l[ne_mask]] += next_distr[ne_mask, atom] * (u - b_j)[ne_mask]
-#         proj_distr[ne_mask, u[ne_mask]] += next_distr[ne_mask, atom] * (b_j - l)[ne_mask]
-#
-#     if dones_mask.any():
-#         proj_distr[dones_mask] = 0.0
-#         tz_j = np.minimum(Vmax, np.maximum(Vmin, rewards[dones_mask]))
-#         b_j = (tz_j - Vmin) / DELTA_Z
-#         l = np.floor(b_j).astype(np.int64)
-#         u = np.ceil(b_j).astype(np.int64)
-#         eq_mask = u == l
-#         eq_dones = dones_mask.copy()
-#         eq_dones[dones_mask] = eq_mask
-#         if eq_dones.any():
-#             proj_distr[eq_dones, l[eq_mask]] = 1.0
-#         ne_mask = u != l
-#         ne_dones = dones_mask.copy()
-#         ne_dones[dones_mask] = ne_mask
-#         if ne_dones.any():
-#             proj_distr[ne_dones, l[ne_mask]] = (u - b_j)[ne_mask]
-#             proj_distr[ne_dones, u[ne_mask]] = (b_j - l)[ne_mask]
-#     return array_to_tensor(proj_distr)
-
-
 def distr_projection(next_distr, rewards, dones_mask):
     gamma = GAMMA ** TRAJECTORY_LENGTH
     proj_distr = np.zeros((BATCH_SIZE, TRAJECTORY_LENGTH, N_ATOMS), dtype=np.float32)
@@ -121,4 +85,22 @@ def compute_actor_loss(states, local_net):
     crt_distr_v = local_net.critic(states, predict_actions)
     actor_loss_v = -local_net.critic.distr_to_q(crt_distr_v)
     actor_loss = actor_loss_v.mean()
+    return actor_loss
+
+
+def ddpg_compute_critic_loss(states, actions, rewards, next_states, dones, gamma,
+                             target_actor, target_critic, local_critic):
+    actions_next = target_actor(next_states)
+    Q_targets_next = target_critic(next_states, actions_next)
+    # Compute Q targets for current states (y_i)
+    Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
+    # Compute critic loss
+    Q_expected = local_critic(states, actions)
+    critic_loss = F.mse_loss(Q_expected, Q_targets)
+    return critic_loss
+
+
+def ddpg_compute_actor_loss(states, local_actor, local_critic):
+    actions_pred = local_actor(states)
+    actor_loss = -local_critic(states, actions_pred).mean()
     return actor_loss
