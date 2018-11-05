@@ -18,3 +18,6 @@ class EnvWrapper:
         rewards = env_info.rewards
         dones = env_info.local_done
         return rewards, next_states, dones
+
+    def close(self):
+        self.env.close()

@@ -43,6 +43,9 @@ def train_agent(episodes=100, model='DDPG'):
             torch.save(agent.actor.state_dict(), 'checkpoints/actor_checkpoint_%d.pth' % ep)
             torch.save(agent.critic.state_dict(), 'checkpoints/critic_checkpoint_%d.pth' % ep)
 
+    env.close()
+
+    return scores
 
 
 if __name__ == '__main__':

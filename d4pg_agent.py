@@ -12,10 +12,10 @@ class D4PGAgent:
     
     def __init__(self, seed=0, train_mode=True):
         self.seed = random.seed(seed)
+        self.train_mode = train_mode
         self.action_size = 4       
         self.state_size = 33
         self.num_agents = 20
-        self.train_mode = train_mode
         self.max_steps = 1000
 
         self.step_count = 0

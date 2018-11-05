@@ -48,7 +48,7 @@ class AgentMemory:
     def __init__(self, buffer_size, batch_size, seed):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
-        self.num_agents = NUM_AGENTS
+        self.num_agents = 20
         actor_buffer_size = int(buffer_size / self.num_agents)
         self.actor_memories = [WorkerMemory(actor_buffer_size) for i in range(self.num_agents)]
         self.memory = deque(maxlen=buffer_size)
