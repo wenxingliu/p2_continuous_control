@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 from config import *
 
@@ -120,3 +121,14 @@ def test_net(env, agent):
         agent.states = agent.next_states
         done = any(agent.dones)
     return agent.scores.mean()
+
+
+def plot_scores(scores, model_name='DDPG'):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.plot(np.arange(1, len(scores) + 1), scores)
+    plt.ylabel('Score')
+    plt.xlabel('Episode')
+    plt.show()
+
+    fig.savefig('%s_scores.png' % model_name)
