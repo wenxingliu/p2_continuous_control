@@ -3,13 +3,22 @@ import numpy as np
 import torch
 
 from ddpg_agent import DDPGAgent
+from d4pg_agent import D4PGAgent
 from env_wrapper import EnvWrapper
 
 __author__ = 'sliu'
 
-def train(episodes=100):
+def train_agent(episodes=100, model='DDPG'):
+
+    if model.lower() == 'd4pg':
+        agent = D4PGAgent()
+        print('Use D4PG agent......\n')
+    else:
+        agent = DDPGAgent()
+        print('Use default DDPG agent......\n')
+
     env = EnvWrapper(file_name='Reacher_Windows_x86_64\Reacher.exe', train_mode=True)
-    agent = DDPGAgent()
+
     scores = []
     scores_window = deque(maxlen=100)
 
@@ -37,4 +46,4 @@ def train(episodes=100):
 
 
 if __name__ == '__main__':
-    train(200)
+    train_agent(200, 'D4PG')

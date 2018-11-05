@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import torch
 import torch.optim as optim
 
@@ -12,8 +11,6 @@ from config import *
 class DDPGAgent:
 
     def __init__(self, seed=0, train_mode=True):
-        # self.seed = random.seed(seed)
-
         self.action_size = 4
         self.state_size = 33
         self.num_agents = 20
@@ -41,6 +38,7 @@ class DDPGAgent:
 
     def reset(self):
         self.noise.reset()
+        self.step_count = 0
         self.scores = np.zeros(self.num_agents)
         self.states, self.actions, self.rewards, self.next_states, self.dones = None, None, None, None, None
 
@@ -49,8 +47,8 @@ class DDPGAgent:
         self.step_count += 1
         self.memory.add(self.states, self.actions, self.rewards, self.next_states, self.dones)
 
-        if len(self.memory) >= self.memory.batch_size:
-            for i in range(3):
+        if self.memory.has_enough_memory():
+            for i in range(UPDATE_FREQUENCY_PER_STEP):
                 states, actions, rewards, next_states, dones = self.memory.sample()
                 self.learn(states, actions, rewards, next_states, dones)
                 self.soft_update()
@@ -73,7 +71,7 @@ class DDPGAgent:
     def learn(self, states, actions, rewards, next_states, dones):
         # Update critic
         self.critic_opt.zero_grad()
-        critic_loss = ddpg_compute_critic_loss(states, actions, rewards, next_states, dones, GAMMA,
+        critic_loss = ddpg_compute_critic_loss(states, actions, rewards, next_states, dones,
                                                self.target_actor, self.target_critic, self.critic)
         critic_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 1)

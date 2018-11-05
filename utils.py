@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 from config import *
 
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -65,10 +64,11 @@ def distr_projection(next_distr, rewards, dones_mask):
             proj_distr[ne_dones, u[ne_mask]] = (b_j - l)[ne_mask]
     return array_to_tensor(proj_distr)
 
-def d4pg_compute_critic_loss(states, actions, rewards, next_states, dones, target_net, local_net):
-    crt_distr_v = local_net.critic(states, actions)
-    last_act_v = target_net.actor(next_states)
-    last_distr_v = F.softmax(target_net.critic(next_states, last_act_v), dim=1)
+
+def d4pg_compute_critic_loss(states, actions, rewards, next_states, dones, target_actor, target_critic, local_critic):
+    crt_distr_v = local_critic(states, actions)
+    last_act_v = target_actor(next_states)
+    last_distr_v = F.softmax(target_critic(next_states, last_act_v), dim=1)
 
     last_distr = last_distr_v.cpu().data.numpy()
     rewards = rewards.cpu().data.numpy()
@@ -80,20 +80,20 @@ def d4pg_compute_critic_loss(states, actions, rewards, next_states, dones, targe
     return critic_loss
 
 
-def d4pg_compute_actor_loss(states, local_net):
-    predict_actions = local_net.actor(states)
-    crt_distr_v = local_net.critic(states, predict_actions)
-    actor_loss_v = -local_net.critic.distr_to_q(crt_distr_v)
+def d4pg_compute_actor_loss(states, local_actor, local_critic):
+    predict_actions = local_actor(states)
+    crt_distr_v = local_critic(states, predict_actions)
+    actor_loss_v = - local_critic.distr_to_q(crt_distr_v)
     actor_loss = actor_loss_v.mean()
     return actor_loss
 
 
-def ddpg_compute_critic_loss(states, actions, rewards, next_states, dones, gamma,
+def ddpg_compute_critic_loss(states, actions, rewards, next_states, dones,
                              target_actor, target_critic, local_critic):
     actions_next = target_actor(next_states)
     target_q_next = target_critic(next_states, actions_next)
     # Compute Q targets for current states (y_i)
-    target_q = rewards + (gamma * target_q_next * (1 - dones))
+    target_q = rewards + (GAMMA * target_q_next * (1 - dones))
     # Compute critic loss
     local_q_pred = local_critic(states, actions)
     critic_loss = F.mse_loss(local_q_pred, target_q)
