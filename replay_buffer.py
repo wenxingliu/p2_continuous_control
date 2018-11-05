@@ -45,46 +45,45 @@ class WorkerMemory:
 
 class AgentMemory:
 
-    def __init__(self, buffer_size, batch_size):
+    def __init__(self, buffer_size, batch_size, seed):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.num_agents = NUM_AGENTS
-        # self.actor_memroies = [WorkerMemory(buffer_size) for i in range(self.num_agents)]
+        # self.actor_memories = [WorkerMemory(buffer_size) for i in range(self.num_agents)]
         self.actor_memories = deque(maxlen=buffer_size)
         self.experience = namedtuple("Experience",
                                      field_names=["state", "action", "reward", "next_state", "done"])
         self.trajectory = namedtuple("Trajectory",
                                      field_names=["states", "actions", "rewards", "next_states", "dones"])
+        random.seed(seed)
+
+    def add_to_actors(self, states, actions, rewards, next_states, dones):
+        for i in range(self.num_agents):
+            self.actor_memories[i].add_to_actors(states[i], actions[i], rewards[i], next_states[i], dones[i])
 
     def add(self, states, actions, rewards, next_states, dones):
-        for i in range(self.num_agents):
-            self.actor_memories[i].add(states[i], actions[i], rewards[i], next_states[i], dones[i])
-
-    def add_to_single_memory(self, states, actions, rewards, next_states, dones):
         for i in range(self.num_agents):
             experience = self.experience(states[i], actions[i], rewards[i], next_states[i], dones[i])
             self.actor_memories.append(experience)
 
-    def sample_single(self):
+    def sample(self):
         sampled_experiences = random.sample(self.actor_memories, k=self.batch_size)
 
-        states, actions, rewards, next_states, dones = [], [], [], [], []
-        for exp in sampled_experiences:
-            states.append(exp.state)
-            actions.append(exp.action)
-            rewards.append(exp.reward)
-            next_states.append(exp.next_state)
-            dones.append(exp.done)
+        states = np.vstack([exp.state for exp in sampled_experiences])
+        actions = np.vstack([exp.action for exp in sampled_experiences])
+        rewards = np.vstack([exp.reward for exp in sampled_experiences])
+        next_states = np.vstack([exp.next_state for exp in sampled_experiences])
+        dones = np.vstack([exp.done for exp in sampled_experiences]).astype(np.uint8)
 
-        states = array_to_tensor(np.array(states))
-        actions = array_to_tensor(np.array(actions))
-        rewards = array_to_tensor(np.array(rewards))
-        next_states = array_to_tensor(np.array(next_states))
-        dones = array_to_tensor(np.array(dones).astype(int))
+        states = array_to_tensor(states)
+        actions = array_to_tensor(actions)
+        rewards = array_to_tensor(rewards)
+        next_states = array_to_tensor(next_states)
+        dones = array_to_tensor(dones)
 
         return states, actions, rewards, next_states, dones
 
-    def sample(self):
+    def sample_trajectories(self):
         individual_actor_memory_len = len(self.actor_memories[0])
 
         sampled_indices = random.sample(range(TRAJECTORY_LENGTH * self.num_agents,
@@ -114,3 +113,35 @@ class AgentMemory:
     def __len__(self):
         return len(self.actor_memories)
         # return sum([len(m) for m in self.actor_memories])
+
+
+class ReplayBuffer:
+    """Fixed-size buffer to store experience tuples."""
+
+    def __init__(self, action_size, buffer_size, batch_size, seed):
+        self.action_size = action_size
+        self.memory = deque(maxlen=buffer_size)
+        self.batch_size = batch_size
+        self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
+        random.seed(seed)
+
+    def add(self, state, action, reward, next_state, done):
+        """Add a new experience to memory."""
+        e = self.experience(state, action, reward, next_state, done)
+        self.memory.append(e)
+
+    def sample(self):
+        """Randomly sample a batch of experiences from memory."""
+        experiences = random.sample(self.memory, k=self.batch_size)
+
+        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
+        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).float().to(device)
+        rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
+        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
+        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
+
+        return (states, actions, rewards, next_states, dones)
+
+    def __len__(self):
+        """Return the current size of internal memory."""
+        return len(self.memory)

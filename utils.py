@@ -65,7 +65,7 @@ def distr_projection(next_distr, rewards, dones_mask):
             proj_distr[ne_dones, u[ne_mask]] = (b_j - l)[ne_mask]
     return array_to_tensor(proj_distr)
 
-def compute_critic_loss(states, actions, rewards, next_states, dones, target_net, local_net):
+def d4pg_compute_critic_loss(states, actions, rewards, next_states, dones, target_net, local_net):
     crt_distr_v = local_net.critic(states, actions)
     last_act_v = target_net.actor(next_states)
     last_distr_v = F.softmax(target_net.critic(next_states, last_act_v), dim=1)
@@ -80,7 +80,7 @@ def compute_critic_loss(states, actions, rewards, next_states, dones, target_net
     return critic_loss
 
 
-def compute_actor_loss(states, local_net):
+def d4pg_compute_actor_loss(states, local_net):
     predict_actions = local_net.actor(states)
     crt_distr_v = local_net.critic(states, predict_actions)
     actor_loss_v = -local_net.critic.distr_to_q(crt_distr_v)
@@ -91,16 +91,32 @@ def compute_actor_loss(states, local_net):
 def ddpg_compute_critic_loss(states, actions, rewards, next_states, dones, gamma,
                              target_actor, target_critic, local_critic):
     actions_next = target_actor(next_states)
-    Q_targets_next = target_critic(next_states, actions_next)
+    target_q_next = target_critic(next_states, actions_next)
     # Compute Q targets for current states (y_i)
-    Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
+    target_q = rewards + (gamma * target_q_next * (1 - dones))
     # Compute critic loss
-    Q_expected = local_critic(states, actions)
-    critic_loss = F.mse_loss(Q_expected, Q_targets)
+    local_q_pred = local_critic(states, actions)
+    critic_loss = F.mse_loss(local_q_pred, target_q)
     return critic_loss
 
 
 def ddpg_compute_actor_loss(states, local_actor, local_critic):
     actions_pred = local_actor(states)
-    actor_loss = -local_critic(states, actions_pred).mean()
+    actor_loss = - local_critic(states, actions_pred).mean()
     return actor_loss
+
+
+def test_net(env, agent):
+    env.train_mode = False
+    agent.reset()
+    env.reset()
+    agent.states = env.reset()
+    done = False
+    while not done:
+        agent.act(add_noise=False)
+        agent.rewards, agent.next_states, agent.dones = env.step(agent.actions)
+        agent.scores += agent.rewards
+        agent.step_count += 1
+        agent.states = agent.next_states
+        done = any(agent.dones)
+    return agent.scores.mean()

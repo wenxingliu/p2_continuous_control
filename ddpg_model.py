@@ -6,6 +6,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+
 def hidden_init(layer):
     fan_in = layer.weight.data.size()[0]
     lim = 1. / np.sqrt(fan_in)
@@ -21,6 +25,8 @@ class Actor(nn.Module):
         self.fc3 = nn.Linear(512, 512)
         self.fc4 = nn.Linear(512, action_size)
         self.reset_parameters()
+        self.to(device)
+
 
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
@@ -32,7 +38,7 @@ class Actor(nn.Module):
         x = F.leaky_relu(self.fc1(state))
         x = F.leaky_relu(self.fc2(x))
         x = F.leaky_relu(self.fc3(x))
-        return torch.tanh(self.fc4(x))
+        return F.tanh(self.fc4(x))
 
 
 class Critic(nn.Module):
@@ -45,6 +51,7 @@ class Critic(nn.Module):
         self.fc3 = nn.Linear(512, 512)
         self.fc4 = nn.Linear(512, 1)
         self.reset_parameters()
+        self.to(device)
 
     def reset_parameters(self):
         self.fcs1.weight.data.uniform_(*hidden_init(self.fcs1))

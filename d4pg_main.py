@@ -14,13 +14,13 @@ from config import *
 def train(episodes=100):
     agent = Agent()
 
-    local_net = Net(agent.state_size, agent.action_size)
-    target_net = Net(agent.state_size, agent.action_size)
+    local_net = Net(agent.state_size, agent.action_size, seed=10)
+    target_net = Net(agent.state_size, agent.action_size, seed=20)
 
     hard_update(local_net, target_net)
 
-    actor_opt = optim.Adam(local_net.actor.parameters(), lr=LR)
-    critic_opt = optim.Adam(local_net.critic.parameters(), lr=LR)
+    actor_opt = optim.Adam(local_net.actor.parameters(), lr=LR_A)
+    critic_opt = optim.Adam(local_net.critic.parameters(), lr=LR_C, weight_decay=WEIGHT_DECAY)
 
     agent_memory = AgentMemory(batch_size=BATCH_SIZE, buffer_size=MEMORY_BUFFER)
 
@@ -34,10 +34,11 @@ def train(episodes=100):
         for i in range(agent.max_steps):
             agent.step(local_net, agent_memory)
 
-            if agent_memory.has_enough_memory() and (agent.step_count % LEARN_EVERY == 0):
-                trajectories = agent_memory.sample()
-                agent.learn(actor_opt, critic_opt, local_net, target_net, trajectories)
-                soft_update(local_net, target_net, TAU)
+            if agent_memory.has_enough_memory() and (agent.step_count % UPDATE_FREQUENCY == 0):
+                for _ in range(LEARN_EVERY_20_STEPS):
+                    trajectories = agent_memory.sample()
+                    agent.learn(actor_opt, critic_opt, local_net, target_net, trajectories)
+                    soft_update(local_net, target_net, TAU)
 
         scores.append(agent.scores.mean())
         scores_window.append(agent.scores.mean())

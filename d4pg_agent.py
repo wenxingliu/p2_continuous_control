@@ -1,15 +1,17 @@
 from unityagents import UnityEnvironment
 import numpy as np
-from utils import array_to_tensor, unpack_trajectories, compute_actor_loss, compute_critic_loss
+import random
+from utils import array_to_tensor, unpack_trajectories, d4pg_compute_actor_loss, d4pg_compute_critic_loss
 import torch
 from config import *
 
 
 class Agent:
     
-    def __init__(self, num_agents=20, train_mode=True):
+    def __init__(self, seed=0, num_agents=20, train_mode=True):
+        self.seed = random.seed(seed)
         
-        self.env = UnityEnvironment(file_name='Reacher_%d.app' % NUM_AGENTS)
+        self.env = UnityEnvironment(file_name='Reacher_Windows_x86_64\Reacher.exe')
         self.brain_name = self.env.brain_names[0]
         self.action_size = 4       
         self.state_size = 33
@@ -52,7 +54,7 @@ class Agent:
         self.step_count += 1
         self.states = self.next_states
 
-        agent_memory.add(self.states, self.actions, self.rewards, self.next_states, self.dones)
+        agent_memory.add_to_actors(self.states, self.actions, self.rewards, self.next_states, self.dones)
         
     def fetch(self, worker_index):
         return (self.states[worker_index], 
@@ -73,14 +75,14 @@ class Agent:
 
         # update critic
         critic_opt.zero_grad()
-        critic_loss = compute_critic_loss(states, actions, rewards, next_states, dones, target_net, local_net)
+        critic_loss = d4pg_compute_critic_loss(states, actions, rewards, next_states, dones, target_net, local_net)
         critic_loss.backward()
         torch.nn.utils.clip_grad_norm_(local_net.critic.parameters(), 1)
         critic_opt.step()
 
         # update actor
         actor_opt.zero_grad()
-        actor_loss = compute_actor_loss(states, local_net)
+        actor_loss = d4pg_compute_actor_loss(states, local_net)
         actor_loss.backward()
         actor_opt.step()
 
