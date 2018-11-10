@@ -64,7 +64,7 @@ The environment is considered solved, when the average (over 100 episodes) of th
 
 ### Instructions
 
-Follow the instructions in `Continuous_Control.ipynb` to get started with training your own agent!  
+Run `train.py` script from terminal to train the agent. There are two options, you are use either a DDPG agent, or a D4PG agent. You can configure which model to use in the script, together with the number of episodes you want to run in training process. However, the D4PG agent needs further work, and has not made to work yet. For now, please use DDPG agent.
 
 ### (Optional) Challenge: Crawler Environment
 

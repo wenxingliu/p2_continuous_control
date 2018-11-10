@@ -107,20 +107,28 @@ def ddpg_compute_actor_loss(states, local_actor, local_critic):
     return actor_loss
 
 
-def test_net(env, agent):
+def test_agent(env, agent, test_episodes=10):
     env.train_mode = False
-    agent.reset()
-    env.reset()
-    agent.states = env.reset()
-    done = False
-    while not done:
-        agent.act(add_noise=False)
-        agent.rewards, agent.next_states, agent.dones = env.step(agent.actions)
-        agent.scores += agent.rewards
-        agent.step_count += 1
-        agent.states = agent.next_states
-        done = any(agent.dones)
-    return agent.scores.mean()
+    scores = []
+    for i in range(1, test_episodes+1):
+
+        agent.reset()
+        env.reset()
+        agent.states = env.reset()
+        done = False
+        while not done:
+            agent.act(add_noise=False)
+            agent.rewards, agent.next_states, agent.dones = env.step(agent.actions)
+            agent.scores += agent.rewards
+            agent.step_count += 1
+            agent.states = agent.next_states
+            done = any(agent.dones)
+
+        print('Episode %d, avg score %.2f' % (i, agent.scores.mean()))
+
+        scores.append(agent.scores.mean())
+
+    return scores
 
 
 def plot_scores(scores, model_name='DDPG'):
