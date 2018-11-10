@@ -3,5 +3,10 @@ __pycache__/*
 .idea/*
 checkpoints/*
 
+*/*.pyc
+*/*.xml
+
 *.app
 *.log
+Crawler_Windows_x86_64/*
+Reacher_Windows_x86_64/*
