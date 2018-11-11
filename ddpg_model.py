@@ -20,10 +20,10 @@ class Actor(nn.Module):
     def __init__(self, state_size, action_size, seed):
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.fc1 = nn.Linear(state_size, 400)
-        self.fc2 = nn.Linear(400, 400)
-        self.fc3 = nn.Linear(400, 400)
-        self.fc4 = nn.Linear(400, action_size)
+        self.fc1 = nn.Linear(state_size, 512)
+        self.fc2 = nn.Linear(512, 512)
+        self.fc3 = nn.Linear(512, 512)
+        self.fc4 = nn.Linear(512, action_size)
         self.reset_parameters()
         self.to(device)
 
@@ -46,10 +46,10 @@ class Critic(nn.Module):
     def __init__(self, state_size, action_size, seed):
         super(Critic, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.fcs1 = nn.Linear(state_size, 400)
-        self.fc2 = nn.Linear(400 + action_size, 400)
-        self.fc3 = nn.Linear(400, 400)
-        self.fc4 = nn.Linear(400, 1)
+        self.fcs1 = nn.Linear(state_size, 512)
+        self.fc2 = nn.Linear(512 + action_size, 512)
+        self.fc3 = nn.Linear(512, 512)
+        self.fc4 = nn.Linear(512, 1)
         self.reset_parameters()
         self.to(device)
 
