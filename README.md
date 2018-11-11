@@ -64,6 +64,8 @@ The environment is considered solved, when the average (over 100 episodes) of th
 
 ### Instructions
 
+This repo uses Version 2 of the environment, which has 20 agents.
+
 #### Repo Structure
 
 - `env_wrapper.py`: Environment
