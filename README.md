@@ -64,6 +64,27 @@ The environment is considered solved, when the average (over 100 episodes) of th
 
 ### Instructions
 
+#### Repo Structure
+
+- `env_wrapper.py`: Environment
+- `replay_buffer.py`: Memory
+- `train.py`: Training script
+
+DDPG Agent:
+
+- `ddpg_agent.py`: DDPG Agent
+- `ddpg_model.py`: DDPG Actor and Critic
+
+D4PG Agent:
+
+- `d4pg_agent.py`: D4PG Agent
+- `d4pg_model.py`: D4PG Actor and Critic
+
+Saved weights:
+
+- `reacher_ddpg_actor_checkpoint.pth`: actor weights
+- `reacher_ddpg_critic_checkpoint.pth`: critic weights
+
 Run `train.py` script from terminal to train the agent. There are two options, you are use either a DDPG agent, or a D4PG agent. You can configure which model to use in the script, together with the number of episodes you want to run in training process. However, the D4PG agent needs further work, and has not made to work yet. For now, please use DDPG agent.
 
 ### (Optional) Challenge: Crawler Environment

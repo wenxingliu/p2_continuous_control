@@ -10,7 +10,8 @@ from config import *
 
 __author__ = 'sliu'
 
-def train_agent(episodes=100, model='DDPG'):
+
+def train_agent(episodes=100, model='DDPG', print_every=10):
 
     if model.lower() == 'd4pg':
         agent = D4PGAgent()
@@ -19,7 +20,6 @@ def train_agent(episodes=100, model='DDPG'):
         agent = DDPGAgent()
         print('Use default DDPG agent......\n')
 
-    print('\n')
     print('Batch size: ', BATCH_SIZE)
     print('Actor learning rate: ', LR_A)
     print('Critic learning rate: ', LR_C)
@@ -43,7 +43,8 @@ def train_agent(episodes=100, model='DDPG'):
         scores.append(agent.scores.mean())
         scores_window.append(agent.scores.mean())
 
-        print('Episode %d, avg score: %.2f' % (ep, agent.scores.mean()))
+        if ep % print_every == 0:
+            print('Episode %d, avg score: %.2f' % (ep, agent.scores.mean()))
 
         if np.mean(scores_window) >= 30:
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(ep - 100,
@@ -53,10 +54,10 @@ def train_agent(episodes=100, model='DDPG'):
 
     env.close()
 
-    return scores
+    return scores, agent
 
 
 if __name__ == '__main__':
     model_name = 'DDPG'
-    scores = train_agent(300, model_name)
+    scores, agent = train_agent(300, model_name)
     plot_scores(scores, model_name)

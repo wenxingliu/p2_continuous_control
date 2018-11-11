@@ -10,12 +10,12 @@ from config import *
 
 class DDPGAgent:
 
-    def __init__(self, seed=0, train_mode=True):
+    def __init__(self, action_size=4, state_size=33, num_agents=20, max_steps=1000, seed=0, train_mode=True):
         self.train_mode = train_mode
-        self.action_size = 4
-        self.state_size = 33
-        self.num_agents = 20
-        self.max_steps = 1000
+        self.action_size = action_size
+        self.state_size = state_size
+        self.num_agents = num_agents
+        self.max_steps = max_steps
 
         self.step_count = 0
         self.scores = np.zeros(self.num_agents)
