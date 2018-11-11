@@ -1,7 +1,7 @@
 .ipynb_checkpoints/*
 __pycache__/*
 .idea/*
-checkpoints/*
+.DS_Store
 
 */*.pyc
 */*.xml
