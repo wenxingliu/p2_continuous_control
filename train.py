@@ -21,8 +21,8 @@ def train_agent(episodes=100, model='DDPG', print_every=10):
         print('Use default DDPG agent......\n')
 
     print('Batch size: ', BATCH_SIZE)
-    print('Actor learning rate: ', LR_A)
-    print('Critic learning rate: ', LR_C)
+    print('Actor learning rate: ', LR_ACTOR)
+    print('Critic learning rate: ', LR_CRITIC)
     print('\n')
 
     env = EnvWrapper(file_name='Reacher_Windows_x86_64\Reacher.exe', train_mode=True)
