@@ -30,8 +30,8 @@ class DDPGAgent:
         self.target_actor = Actor(self.state_size, self.action_size, seed)
         self.target_critic = Critic(self.state_size, self.action_size, seed)
 
-        self.actor_opt = optim.Adam(self.actor.parameters(), lr=LR_A)
-        self.critic_opt = optim.Adam(self.critic.parameters(), lr=LR_C, weight_decay=WEIGHT_DECAY)
+        self.actor_opt = optim.Adam(self.actor.parameters(), lr=LR_ACTOR)
+        self.critic_opt = optim.Adam(self.critic.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         hard_update(self.actor, self.target_actor)
         hard_update(self.critic, self.target_critic)
